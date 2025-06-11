@@ -142,14 +142,35 @@ function App() {
   const [addOns, setAddOns] = useState<{ [key: string]: number }>({});
   const [markup, setMarkup] = useState(50);
   const [billingPeriod, setBillingPeriod] = useState('annual');
+  const [showClientNameModal, setShowClientNameModal] = useState(false);
+  const [pendingTenant, setPendingTenant] = useState<any>(null);
+  const [clientName, setClientName] = useState('');
 
   const addTenant = (plan: any) => {
-    const newTenant = {
-      ...plan,
-      id: Date.now().toString(),
-      originalId: plan.id
-    };
-    setSelectedTenants([...selectedTenants, newTenant]);
+    setPendingTenant(plan);
+    setShowClientNameModal(true);
+    setClientName('');
+  };
+
+  const confirmAddTenant = () => {
+    if (pendingTenant && clientName.trim()) {
+      const newTenant = {
+        ...pendingTenant,
+        id: Date.now().toString(),
+        originalId: pendingTenant.id,
+        clientName: clientName.trim()
+      };
+      setSelectedTenants([...selectedTenants, newTenant]);
+      setShowClientNameModal(false);
+      setPendingTenant(null);
+      setClientName('');
+    }
+  };
+
+  const cancelAddTenant = () => {
+    setShowClientNameModal(false);
+    setPendingTenant(null);
+    setClientName('');
   };
 
   const removeTenant = (id: string) => {
@@ -208,6 +229,56 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-4">
+      {/* Client Name Modal */}
+      {showClientNameModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-bold text-gray-800 mb-2">Add Client Name</h3>
+              <p className="text-sm text-gray-600">
+                Enter a name for this <span className="font-semibold text-blue-600">{pendingTenant?.name}</span> client
+              </p>
+            </div>
+            
+            <div className="mb-6">
+              <input
+                type="text"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                placeholder="e.g., Acme Corp, ABC Industries..."
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-center text-gray-900"
+                autoFocus
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && clientName.trim()) {
+                    confirmAddTenant();
+                  }
+                }}
+              />
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={cancelAddTenant}
+                className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAddTenant}
+                disabled={!clientName.trim()}
+                className={`flex-1 py-2 px-4 rounded-lg transition-all duration-200 ${
+                  clientName.trim()
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Add Client
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header Card */}
         <div className="bg-white rounded-xl shadow-lg p-4 mb-4 text-center">
@@ -326,8 +397,8 @@ function App() {
                           <div className="flex items-center">
                             <div className={`w-3 h-3 bg-gradient-to-r ${tenant.color} rounded-full mr-2`}></div>
                             <div>
-                              <div className="text-sm font-semibold text-gray-800">{tenant.name}</div>
-                              <div className="text-xs text-gray-500">{tenant.identifiers.toLocaleString()} identifiers</div>
+                              <div className="text-sm font-semibold text-gray-800">{tenant.clientName}</div>
+                              <div className="text-xs text-gray-500">{tenant.name} • {tenant.identifiers.toLocaleString()} identifiers</div>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -486,6 +557,69 @@ function App() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Tenant Hierarchy Visualization */}
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <div className="text-center mb-4">
+                <h2 className="text-lg font-bold text-gray-800 mb-1">Tenant Structure</h2>
+                <div className="w-8 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto"></div>
+              </div>
+              
+              <div className="space-y-4">
+                {/* MSSP Base License (Parent) */}
+                <div className="relative">
+                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg p-3 text-center shadow-md">
+                    <div className="text-lg mb-1">🏢</div>
+                    <div className="text-sm font-bold">MSSP Base License</div>
+                    <div className="text-xs opacity-90">$15,000/year</div>
+                  </div>
+                  
+                  {/* Connecting Line */}
+                  {selectedTenants.length > 0 && (
+                    <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 h-4 bg-gray-300"></div>
+                  )}
+                </div>
+
+                {/* Client Tenants (Children) */}
+                {selectedTenants.length > 0 && (
+                  <div className="relative">
+                    {/* Horizontal connecting line for multiple tenants */}
+                    {selectedTenants.length > 1 && (
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-4/5 h-0.5 bg-gray-300"></div>
+                    )}
+                    
+                    <div className={`grid gap-2 ${selectedTenants.length === 1 ? 'grid-cols-1' : selectedTenants.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                      {selectedTenants.map((tenant) => (
+                        <div key={tenant.id} className="relative">
+                          {/* Vertical connecting line */}
+                          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0.5 h-2 bg-gray-300"></div>
+                          
+                          <div className={`bg-gradient-to-r ${tenant.gradient} text-white rounded-lg p-3 text-center shadow-md mt-2`}>
+                            <div className="text-sm mb-1">{tenant.icon}</div>
+                            <div className="text-xs font-bold text-black bg-white/90 rounded px-2 py-1 mb-1">{tenant.clientName}</div>
+                            <div className="text-xs font-semibold text-black bg-white/80 rounded px-2 py-0.5 mb-1">{tenant.name}</div>
+                            <div className="text-xs font-semibold text-black bg-white/80 rounded px-2 py-0.5 mb-1">${tenant.price.toLocaleString()}/year</div>
+                            <div className="text-xs font-medium text-black bg-white/70 rounded px-2 py-0.5 inline-block">
+                              {tenant.identifiers} IDs
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Tenants Message */}
+                {selectedTenants.length === 0 && (
+                  <div className="text-center py-4">
+                    <div className="text-gray-400 text-sm">
+                      <div className="text-2xl mb-2">👥</div>
+                      No client tenants selected
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
