@@ -1,6 +1,6 @@
 # MSSP ROI Calculator
 
-A comprehensive web application built with React and TypeScript for calculating MSSP (Managed Security Service Provider) costs and determining customer pricing for Flare's cybersecurity platform.
+A comprehensive web application built with React and TypeScript for calculating MSSP (Managed Security Service Provider) costs and determining customer pricing for cybersecurity platforms.
 
 ## 🚀 Features
 
@@ -160,7 +160,7 @@ The application is built with modularity in mind. Key areas for customization:
 
 ## 📝 License
 
-This project is proprietary software for Flare's MSSP program.
+This project is proprietary software for MSSP programs.
 
 ## 📞 Support
 

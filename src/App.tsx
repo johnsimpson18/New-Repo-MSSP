@@ -217,7 +217,7 @@ function App() {
             </div>
             <div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Flare MSSP ROI Calculator
+                MSSP ROI Calculator
               </h1>
               <div className="h-0.5 w-24 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mx-auto mt-1"></div>
             </div>
@@ -249,7 +249,7 @@ function App() {
                   <span className="text-sm font-semibold text-blue-700">Required Foundation License</span>
                 </div>
                 <p className="text-xs text-blue-700 leading-relaxed mb-3 max-w-xl mx-auto">
-                  Includes: 100 identifiers, 100 Global Searches & API per month, SSO & MFA, 
+                  Includes: 100 identifiers, Global Search Bar & Search API (100 searches/month), SSO & MFA, 
                   Supply Chain Exposure, Threat Flow Intelligence, Alerts, SIEM/SOAR Integrations
                 </p>
                 <div className="text-center">
