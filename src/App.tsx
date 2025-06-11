@@ -163,15 +163,6 @@ function App() {
     });
   };
 
-  const calculateTotalCost = () => {
-    const tenantsCost = selectedTenants.reduce((sum, tenant) => sum + tenant.price, 0);
-    const addOnsCost = Object.entries(addOns).reduce((sum, [addOnId, quantity]) => {
-      const addOn = addOnOptions.find(ao => ao.id === addOnId);
-      return sum + (addOn ? addOn.price * quantity : 0);
-    }, 0);
-    return BASE_LICENSE_COST + tenantsCost + addOnsCost;
-  };
-
   const calculations = useMemo(() => {
     const tenantsCost = selectedTenants.reduce((sum, tenant) => sum + tenant.price, 0);
     const addOnsCost = Object.entries(addOns).reduce((sum, [addOnId, quantity]) => {
@@ -459,14 +450,14 @@ function App() {
                       <input
                         type="range"
                         min="10"
-                        max="200"
+                        max="100"
                         step="5"
                         value={markup}
                         onChange={(e) => setMarkup(parseFloat(e.target.value))}
                         className="w-full h-2 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-lg appearance-none cursor-pointer slider"
                       />
                     </div>
-                    <span className="text-xs text-gray-500 font-medium">200%</span>
+                    <span className="text-xs text-gray-500 font-medium">100%</span>
                   </div>
                 </div>
 
