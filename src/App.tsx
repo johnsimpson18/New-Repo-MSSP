@@ -61,83 +61,126 @@ const tenantPlans = [
 
 // Add-on options
 const addOnOptions = [
-  // MSSP Add-ons
+  // Add-Ons for Tenant-Model MSSP (requires FP-BASE-PROVIDER SKU)
   {
     id: 'individual-takedown',
     name: 'Individual Takedowns',
-    sku: 'MSSP-INDIVIDUAL-TAKEDOWN',
+    sku: 'MSSP-TD-1',
     price: 500,
     category: 'MSSP',
     icon: '🎯'
   },
   {
     id: 'bulk-takedowns',
-    name: '10 Takedowns Bundle', 
-    sku: 'MSSP-10-TAKEDOWNS',
+    name: '10 takedowns – Valid until renewal',
+    sku: 'MSSP-TD-10',
     price: 3000,
     category: 'MSSP',
     icon: '🎯'
   },
   {
-    id: 'additional-searches-5k',
-    name: 'Additional Searches (5K)',
-    sku: 'MSSP-SEARCH-5K',
+    id: 'additional-searches-100',
+    name: 'Additional 100 searches per month (UI and API)',
+    sku: 'MSSP-SEARCHES-100',
     price: 5000,
     category: 'MSSP',
     icon: '🔍'
   },
   {
-    id: 'additional-searches-8k',
-    name: 'Additional Searches (8K)',
-    sku: 'MSSP-SEARCH-8K', 
+    id: 'additional-searches-200',
+    name: 'Additional 200 searches per month (UI and API)',
+    sku: 'MSSP-SEARCHES-200',
     price: 8000,
     category: 'MSSP',
     icon: '🔍'
   },
-  // Tenant Add-ons
+  // Add-Ons to End-Customers Tenants (requires tenant SKU)
   {
-    id: 'supply-chain',
-    name: 'Supply Chain Exposure',
-    sku: 'TENANT-SUPPLY-CHAIN',
-    price: 2000,
+    id: 'supply-chain-micro',
+    name: 'Supply Chain Exposure (Micro Tenant Only)',
+    sku: 'MSSP-T-SUPPLYCHAIN-M',
+    price: 3000,
     category: 'Tenant',
     icon: '🔗'
   },
   {
-    id: 'view-only-5',
-    name: '5 View-Only Licenses',
-    sku: 'TENANT-VIEW-ONLY-5',
-    price: 1000,
+    id: 'supply-chain-all',
+    name: 'Supply Chain Exposure (For All other Tenants)',
+    sku: 'MSSP-T-SUPPLYCHAIN',
+    price: 8000,
+    category: 'Tenant',
+    icon: '🔗'
+  },
+  {
+    id: 'view-licenses',
+    name: 'Unlimited End-customer view-only licenses',
+    sku: 'MSSP-T-VIEW-LICENSES',
+    price: 750,
     category: 'Tenant',
     icon: '👥'
   },
   {
-    id: 'view-only-10',
-    name: '10 View-Only Licenses',
-    sku: 'TENANT-VIEW-ONLY-10',
-    price: 1800,
+    id: 'additional-identifiers-25',
+    name: 'Additional 25 identifiers',
+    sku: 'MSSP-T-IDENT-25',
+    price: 500,
     category: 'Tenant',
-    icon: '👥'
+    icon: '🔢'
   },
   {
-    id: 'additional-identifiers',
-    name: 'Additional 100 Identifiers',
-    sku: 'TENANT-IDENTIFIERS-100',
+    id: 'additional-identifiers-100',
+    name: 'Additional 100 identifiers',
+    sku: 'MSSP-T-IDENT-100',
     price: 1200,
     category: 'Tenant',
     icon: '🔢'
   },
   {
-    id: 'custom-intelligence',
-    name: 'Custom Intelligence',
-    sku: 'TENANT-CUSTOM-INTEL',
-    price: 5000,
+    id: 'additional-identifiers-200',
+    name: 'Additional 200 identifiers',
+    sku: 'MSSP-T-IDENT-200',
+    price: 2000,
+    category: 'Tenant',
+    icon: '🔢'
+  },
+  {
+    id: 'additional-identifiers-500',
+    name: 'Additional 500 identifiers',
+    sku: 'MSSP-T-IDENT-500',
+    price: 4500,
+    category: 'Tenant',
+    icon: '🔢'
+  },
+  {
+    id: 'additional-identifiers-1000',
+    name: 'Additional 1000 identifiers',
+    sku: 'MSSP-T-IDENT-1000',
+    price: 8000,
+    category: 'Tenant',
+    icon: '🔢'
+  },
+  {
+    id: 'additional-identifiers-10k',
+    name: 'Additional 10,000 identifiers',
+    sku: 'MSSP-T-IDENT-10k',
+    price: 20000,
+    category: 'Tenant',
+    icon: '🔢'
+  },
+  {
+    id: 'threat-flow-custom',
+    name: 'Threat Flow Custom Generated Intelligence and Threat Flow Explorer',
+    sku: 'MSSP-T-TFCUSTOM',
+    price: 8000,
     category: 'Tenant',
     icon: '🧠'
   }
 ];
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [selectedTenants, setSelectedTenants] = useState<any[]>([]);
   const [addOns, setAddOns] = useState<{ [key: string]: number }>({});
   const [markup, setMarkup] = useState(50);
@@ -145,6 +188,17 @@ function App() {
   const [showClientNameModal, setShowClientNameModal] = useState(false);
   const [pendingTenant, setPendingTenant] = useState<any>(null);
   const [clientName, setClientName] = useState('');
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === 'Flare-MSSP') {
+      setIsAuthenticated(true);
+      setPasswordError('');
+    } else {
+      setPasswordError('Incorrect password. Please try again.');
+      setPassword('');
+    }
+  };
 
   const addTenant = (plan: any) => {
     setPendingTenant(plan);
@@ -227,6 +281,58 @@ function App() {
     };
   }, [selectedTenants, addOns, markup, billingPeriod]);
 
+  // Show login screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4">
+          <div className="text-center mb-6">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-white text-2xl">🔒</span>
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+              MSSP ROI Calculator
+            </h1>
+            <p className="text-gray-600 text-sm">
+              Please enter the access password to continue
+            </p>
+          </div>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-900"
+                placeholder="Enter password"
+                autoFocus
+                required
+              />
+            </div>
+            
+            {passwordError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-600 text-sm font-medium">{passwordError}</p>
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105"
+            >
+              Access Calculator
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-4">
       {/* Client Name Modal */}
@@ -245,7 +351,7 @@ function App() {
                 type="text"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                placeholder="e.g., Acme Corp, ABC Industries..."
+                placeholder="Please refrain from using actual client names for security"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-center text-gray-900"
                 autoFocus
                 onKeyPress={(e) => {
@@ -453,9 +559,9 @@ function App() {
                             type="number"
                             min="0"
                             max="10"
-                            value={addOns[addOn.id] || 0}
+                            value={addOns[addOn.id] || ''}
                             onChange={(e) => updateAddOn(addOn.id, parseInt(e.target.value) || 0)}
-                            className="w-16 px-2 py-1 border border-gray-200 rounded text-center text-xs font-semibold focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all duration-200"
+                            className="w-16 px-2 py-1 border border-gray-200 rounded text-center text-xs font-semibold text-gray-900 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all duration-200"
                           />
                         </div>
                       </div>
@@ -484,9 +590,9 @@ function App() {
                             type="number"
                             min="0"
                             max="10"
-                            value={addOns[addOn.id] || 0}
+                            value={addOns[addOn.id] || ''}
                             onChange={(e) => updateAddOn(addOn.id, parseInt(e.target.value) || 0)}
-                            className="w-16 px-2 py-1 border border-gray-200 rounded text-center text-xs font-semibold focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 transition-all duration-200"
+                            className="w-16 px-2 py-1 border border-gray-200 rounded text-center text-xs font-semibold text-gray-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 transition-all duration-200"
                           />
                         </div>
                       </div>
@@ -674,27 +780,65 @@ function App() {
             {/* Customer Pricing Card */}
             <div className="bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 text-white rounded-xl shadow-xl p-4 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-purple-600/20 backdrop-blur-sm"></div>
-              <div className="relative text-center">
-                <div className="mb-4">
+              <div className="relative">
+                <div className="text-center mb-4">
                   <div className="bg-white/20 p-2 rounded-lg inline-block mb-2">
                     <span className="text-lg">💰</span>
                   </div>
                   <h2 className="text-lg font-bold">Customer Pricing</h2>
                 </div>
                 
+                {/* Individual Customer Pricing */}
+                {selectedTenants.length > 0 && (
+                  <div className="mb-6">
+                    <div className="text-center mb-3">
+                      <h3 className="text-sm font-semibold text-white/90">Per Customer Pricing</h3>
+                      <div className="w-12 h-0.5 bg-white/40 rounded-full mx-auto mt-1"></div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {selectedTenants.map((tenant) => {
+                        const tenantPrice = tenant.price * (1 + markup / 100);
+                        const displayPrice = billingPeriod === 'annual' ? tenantPrice : tenantPrice / 12;
+                        
+                        return (
+                          <div key={tenant.id} className="bg-white/10 rounded-lg p-3">
+                            <div className="flex justify-between items-center">
+                              <div className="text-left">
+                                <div className="text-xs font-bold text-white">{tenant.clientName}</div>
+                                <div className="text-xs text-white/70">{tenant.name}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm font-bold text-white">${displayPrice.toLocaleString()}</div>
+                                <div className="text-xs text-white/70">{billingPeriod === 'annual' ? '/year' : '/month'}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Combined Totals */}
                 <div className="space-y-3">
+                  <div className="text-center mb-3">
+                    <h3 className="text-sm font-semibold text-white/90">Combined Totals</h3>
+                    <div className="w-12 h-0.5 bg-white/40 rounded-full mx-auto mt-1"></div>
+                  </div>
+                  
                   <div className="bg-white/10 rounded-lg p-3">
-                    <div className="text-emerald-100 text-xs font-medium mb-1">Your Cost</div>
+                    <div className="text-emerald-100 text-xs font-medium mb-1">Your Total Cost</div>
                     <div className="text-lg font-bold">${calculations.displayCost.toLocaleString()}</div>
                   </div>
                   
                   <div className="bg-white/10 rounded-lg p-3">
-                    <div className="text-blue-100 text-xs font-medium mb-1">Customer Price</div>
+                    <div className="text-blue-100 text-xs font-medium mb-1">Total Customer Revenue</div>
                     <div className="text-xl font-bold">${calculations.displayCustomerPrice.toLocaleString()}</div>
                   </div>
                   
                   <div className="bg-white/10 rounded-lg p-3">
-                    <div className="text-purple-100 text-xs font-medium mb-1">Your Profit</div>
+                    <div className="text-purple-100 text-xs font-medium mb-1">Your Total Profit</div>
                     <div className="text-lg font-bold">${calculations.displayProfit.toLocaleString()}</div>
                   </div>
                   
